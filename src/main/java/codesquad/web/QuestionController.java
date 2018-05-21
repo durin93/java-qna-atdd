@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import codesquad.domain.User;
 import codesquad.dto.QuestionDto;
 import codesquad.security.HttpSessionUtils;
+import codesquad.security.LoginUser;
 import codesquad.service.QnaService;
 
 @Controller
@@ -28,9 +30,13 @@ public class QuestionController {
 	}
 	
 	@PostMapping("")
-	public String create(QuestionDto questionDto) {
+	public String create(@LoginUser User loginUser, QuestionDto questionDto) {
 		
-//		qnaService.create(questionDto.toQuestion());
+		if(loginUser.isGuestUser()) {
+			return "/user/login_failed";
+		}
+		
+		qnaService.create(loginUser, questionDto.toQuestion());
 		return "redirect:/questions";
 	}
 	

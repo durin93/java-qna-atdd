@@ -17,6 +17,7 @@ import codesquad.domain.AnswerRepository;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
+import codesquad.dto.UserDto;
 
 @Service("qnaService")
 public class QnaService {

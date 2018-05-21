@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 
 import codesquad.domain.QuestionRepository;
+import codesquad.domain.User;
 import support.test.AcceptanceTest;
 import support.test.HtmlFormDataBuilder;
 
@@ -26,28 +27,30 @@ public class QuestionAcceptanceTest extends AcceptanceTest{
 	}
 	
 	@Test
-	public void createSuccess() {
+	public void createSuccess_login() {
 		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm()
 				.addParameter("title", "test제목")
 				.addParameter("contents", "test내용").build();
-		ResponseEntity<String> response = template().postForEntity("/questions", request, String.class);
 		
+        User loginUser = defaultUser();
+		ResponseEntity<String> response =  basicAuthTemplate(loginUser).postForEntity("/questions", request, String.class);
 		assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
+		
 		assertThat(questionRepository.findById(3L).isPresent(), is(true));
 		assertThat(questionRepository.findById(4L).isPresent(), is(false));
 		assertThat(response.getHeaders().getLocation().getPath(), is("/questions"));
 	}
 	
 	@Test
-	public void createFail() {
+	public void createFail_no_login() {
 		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm()
 				.addParameter("title", "test제목")
 				.addParameter("contents", "test내용").build();
+		
 		ResponseEntity<String> response = template().postForEntity("/questions", request, String.class);
 		
-		
-		assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
-		assertThat(response.getHeaders().getLocation().getPath(), is("/users/form"));
+		assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
+//		assertThat(response.getStatusCode(), is(HttpStatus.OK));
 	}
 	
 }
