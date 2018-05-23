@@ -59,7 +59,7 @@ public class QuestionController {
 			model.addAttribute("question", question);
 			return "/qna/updateForm";
 		} catch (AuthenticationException e) {
-			model.addAttribute("errorMessage", e.getMessage());
+			model.addAttribute("errorMessage", "자기 자신의 글만 수정 가능");
 			return "/user/login_failed";
 		}
 	}
