@@ -45,7 +45,7 @@ public class QuestionController {
 	
 	@GetMapping("/{id}")
 	public String showQuestion(@PathVariable Long id, Model model) {
-		model.addAttribute("question", qnaService.findById(id));
+		model.addAttribute("question", qnaService.findById(id).get());
 		return "/qna/show";
 	}
 	
@@ -59,7 +59,7 @@ public class QuestionController {
 			model.addAttribute("question", question);
 			return "/qna/updateForm";
 		} catch (AuthenticationException e) {
-			model.addAttribute("errorMessage", "자기자신의 글만 수정가능");
+			model.addAttribute("errorMessage", e.getMessage());
 			return "/user/login_failed";
 		}
 	}

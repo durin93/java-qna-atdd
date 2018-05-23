@@ -3,6 +3,8 @@ package codesquad.web;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
+
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,41 +90,33 @@ public class QuestionAcceptanceTest extends AcceptanceTest{
 		log.debug("수정 전:"+questionRepository.findById(EXISTS_QUESTION_ID).toString());
 
 		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm()
-				.addParameter("_method", "put")
+				.put()
 				.addParameter("title", "질문제목수정test")
 				.addParameter("contents", "질문내용수정test").build();
 		ResponseEntity<String> response = basicAuthTemplate().postForEntity(String.format("/questions/%d", EXISTS_QUESTION_ID), request, String.class);
 		
 		assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
 		assertThat(response.getHeaders().getLocation().getPath(), is(String.format("/questions/%d", EXISTS_QUESTION_ID)));
-		
 		log.debug("수정 후:"+questionRepository.findById(EXISTS_QUESTION_ID).toString());
 	}
 	
 	
 	@Test
 	public void delete_login_owner() {
-		log.debug("삭제 전:"+questionRepository.findById(EXISTS_QUESTION_ID).isPresent());
-
 		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm()
-				.addParameter("_method", "delete").build();
+				.delete().build();
 		ResponseEntity<String> response = basicAuthTemplate(defaultUser()).postForEntity(String.format("/questions/%d",EXISTS_QUESTION_ID), request, String.class);
 		assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
-		
-		log.debug("삭제 후:"+questionRepository.findById(EXISTS_QUESTION_ID).isPresent());
+		assertThat(questionRepository.findById(EXISTS_QUESTION_ID), is(Optional.empty()));
 	}
 	
 	@Test
 	public void delete_login_noOwner() {
 		log.debug("삭제 전:"+questionRepository.findById(EXISTS_QUESTION_ID).isPresent());
-
-		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm()
-				.addParameter("_method", "delete").build();
+		HttpEntity<MultiValueMap<String, Object>> request = HtmlFormDataBuilder.urlEncodedForm().delete().build();
 		ResponseEntity<String> response = basicAuthTemplate(defaultOtherUser()).postForEntity(String.format("/questions/%d",EXISTS_QUESTION_ID), request, String.class);
 		assertThat(response.getStatusCode(), is(HttpStatus.OK));
-
 		log.debug("삭제 후(실패임):"+questionRepository.findById(EXISTS_QUESTION_ID).isPresent());
-		
 	}
 	
 	

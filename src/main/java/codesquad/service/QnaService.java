@@ -43,15 +43,12 @@ public class QnaService {
         return questionRepository.findById(id);
     }
 
-    public Question update(User loginUser, long id, Question updatedQuestion) throws AuthenticationException {
-    	/*
-    	 * 기존코드
-    	 * if(!updatedQuestion.isOwner(loginUser)){
-    		throw new AuthenticationException("본인만 수정가능");
-    	}*/
-    	Question question = questionRepository.findById(id).filter(q -> q.isOwner(loginUser)).orElseThrow(() -> new AuthenticationException("본인만 수정 가능"));
-    	question.update(updatedQuestion);
-    	System.out.println("가즈아"+question.toString());
+    public Question update(User loginUser, long id, Question updatedQuestion) throws AuthenticationException{
+    	/*기존
+    	Question question =  questionRepository.findById(id).filter(q -> q.isOwner(loginUser)).orElseThrow(() -> new AuthenticationException("본인만 수정 가능"));
+    	*/
+    	Question question = questionRepository.findById(id).get();
+    	question.update(updatedQuestion, loginUser);
     	return questionRepository.save(question);
     }
 
