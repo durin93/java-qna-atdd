@@ -7,6 +7,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Size;
 
+
 import support.domain.AbstractEntity;
 import support.domain.UrlGeneratable;
 
@@ -40,6 +41,12 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
         this.question = question;
         this.contents = contents;
         this.deleted = false;
+    }
+    
+    public Answer(User writer, String contents, Question question) {
+    	this.writer = writer;
+    	this.contents = contents;
+    	this.question = question;
     }
 
     public User getWriter() {
