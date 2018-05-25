@@ -56,8 +56,9 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 	@Test
 	public void delete() {
 		createResource(basicAuthTemplate(), "/api/questions",  createQuestionDto(4L));
+		assertThat(questionRepository.findById(4L).get().isDeleted(), is(false));
 		basicAuthTemplate().delete("/api/questions/4");
-		assertThat(questionRepository.findById(4L).isPresent(), is(false));
+		assertThat(questionRepository.findById(4L).get().isDeleted(), is(true));
 	}
 	
 	public QuestionDto createQuestionDto(Long id) {

@@ -39,13 +39,13 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 	public void delete_noOwner() {
 		assertThat(answerRepository.findById(EXIST_ANSWER).isPresent(), is(true));
 		basicAuthTemplate().delete(String.format("/api/answers/%d", EXIST_ANSWER));
-		assertThat(answerRepository.findById(EXIST_ANSWER).isPresent(), is(true));
+		assertThat(answerRepository.findById(EXIST_ANSWER).get().isDeleted(), is(false));
 	}
 	@Test
 	public void delete() {
 		assertThat(answerRepository.findById(EXIST_ANSWER).isPresent(), is(true));
 		basicAuthTemplate(defaultOtherUser()).delete(String.format("/api/answers/%d", EXIST_ANSWER));
-		assertThat(answerRepository.findById(EXIST_ANSWER).isPresent(), is(false));
+		assertThat(answerRepository.findById(EXIST_ANSWER).get().isDeleted(), is(true));
 	}
 
 }

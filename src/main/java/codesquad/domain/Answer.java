@@ -7,7 +7,7 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Size;
 
-
+import codesquad.CannotDeleteException;
 import support.domain.AbstractEntity;
 import support.domain.UrlGeneratable;
 
@@ -71,6 +71,13 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
 
     public boolean isDeleted() {
         return deleted;
+    }
+    
+    public void delete() throws CannotDeleteException {
+    	if(this.deleted) {
+    		throw new CannotDeleteException("이미 삭제된 댓글");
+    	}
+    	this.deleted = true;
     }
 
     @Override

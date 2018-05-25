@@ -17,6 +17,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Where;
 
+import codesquad.CannotDeleteException;
 import codesquad.dto.QuestionDto;
 import support.domain.AbstractEntity;
 import support.domain.UrlGeneratable;
@@ -100,6 +101,13 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 		this.title = updatedQuestion.title;
 		this.contents = updatedQuestion.contents;
 	}
+
+	  public void delete() throws CannotDeleteException {
+	    	if(this.deleted) {
+	    		throw new CannotDeleteException("이미 삭제된 댓글");
+	    	}
+	    	this.deleted = true;
+	    }
 
 
 }

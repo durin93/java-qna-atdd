@@ -42,17 +42,21 @@ public class QnaService {
 		return questionRepository.findById(id);
 	}
 
+	
+	@Transactional
 	public Question update(User loginUser, long id, Question updatedQuestion) throws AuthenticationException {
 		Question question = questionRepository.findById(id).orElseThrow(NullPointerException::new);
 		question.update(updatedQuestion, loginUser);
-		return questionRepository.save(question);
+//		return questionRepository.save(question);
+		return question;
 	}
 
 	@Transactional
 	public void deleteQuestion(User loginUser, long id) throws CannotDeleteException {
 		Question question = questionRepository.findById(id).filter(q -> q.isOwner(loginUser))
 				.orElseThrow(() -> new CannotDeleteException("본인만 수정 가능"));
-		questionRepository.delete(question);
+		question.delete(); 
+//		questionRepository.delete(question);
 	}
 
 	public Iterable<Question> findAll() {
@@ -68,9 +72,11 @@ public class QnaService {
 		return answerRepository.save(new Answer(loginUser, contents, question));
 	}
 
+	@Transactional
 	public void deleteAnswer(User loginUser, long id) throws CannotDeleteException {
 		Answer answer = answerRepository.findById(id).filter(a -> a.isOwner(loginUser))
 				.orElseThrow(() -> new CannotDeleteException("본인만 삭제 가능"));
-		answerRepository.delete(answer);
+		answer.delete();
+//		answerRepository.save(answer);
 	}
 }
