@@ -3,6 +3,9 @@ package codesquad.domain;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.naming.AuthenticationException;
 
 import org.junit.Before;
@@ -39,8 +42,12 @@ public class QuestionTest {
 
 	@Test
 	public void delete본인() throws AuthenticationException, CannotDeleteException{
-		question.delete(user);
+		List<DeleteHistory> histories = question.delete(user);
 		assertThat(question.isDeleted(), is(true));
+		List<DeleteHistory> testHistories = new ArrayList<>();
+		testHistories.add(new DeleteHistory(ContentType.QUESTION, 0L, user));
+		assertThat(histories, is(testHistories));
+		
 	}
 	
 	@Test(expected=AuthenticationException.class)
@@ -52,9 +59,14 @@ public class QuestionTest {
 	public void delete_댓글존재_모두질문유저꺼() throws AuthenticationException, CannotDeleteException{
 		Answer answer = new Answer(1L, user, question, "내용내용");
 		question.addAnswer(answer);
-		question.delete(user);
+		List<DeleteHistory> histories = question.delete(user);
 		assertThat(question.isDeleted(), is(true));
 		assertThat(answer.isDeleted(), is(true));
+		
+		List<DeleteHistory> testHistories = new ArrayList<>();
+		testHistories.add(new DeleteHistory(ContentType.ANSWER, 1L, user));
+		testHistories.add(new DeleteHistory(ContentType.QUESTION, 0L, user));
+		assertThat(histories, is(testHistories));
 	}
 	
 	@Test(expected=CannotDeleteException.class)
@@ -64,5 +76,36 @@ public class QuestionTest {
 		question.delete(user);
 	}
 	
+	@Test
+	public void checkAnswerStatus_다른유저댓글존재() {
+		question.addAnswer(new Answer(1L, user, question, "내용내용"));
+		question.addAnswer(new Answer(2L, otherUser, question, "내용내용"));
+		assertThat(question.checkAnswerStatus(user), is(false));
+	}
+	@Test
+	public void checkAnswerStatus() {
+		question.addAnswer(new Answer(1L, user, question, "내용내용"));
+		question.addAnswer(new Answer(1L, user, question, "내용내용"));
+		assertThat(question.checkAnswerStatus(user), is(true));
+	}
+	
+	@Test(expected=AuthenticationException.class)
+	public void checkQuestionStatus_다른유저() throws AuthenticationException, CannotDeleteException {
+		question.checkQuestionStatus(otherUser);
+	}
+
+	@Test(expected=CannotDeleteException.class)
+	public void checkQuestionStatus_이미지워진글() throws AuthenticationException, CannotDeleteException {
+		question.delete(user);
+		question.checkQuestionStatus(user);
+	}
+	
+	@Test
+	public void deleteAnswer() throws AuthenticationException, CannotDeleteException {
+		question.addAnswer(new Answer(1L, user, question, "내용내용"));
+		List<DeleteHistory> histories = new ArrayList<>();
+		histories.add(new DeleteHistory(ContentType.ANSWER, 1L, user));
+		assertThat(question.deleteAnswer(user), is(histories));
+	}
 	
 }
