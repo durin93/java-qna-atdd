@@ -17,7 +17,6 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Where;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import codesquad.CannotDeleteException;
 import codesquad.dto.QuestionDto;
 import support.domain.AbstractEntity;
@@ -103,15 +102,21 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 		this.contents = updatedQuestion.contents;
 	}
 
-	public void delete(User loginUser) throws CannotDeleteException, AuthenticationException {
+	public List<DeleteHistory> delete(User loginUser) throws CannotDeleteException, AuthenticationException {
+		checkQuestionStatus(loginUser);
+		List<DeleteHistory> histories = deleteAnswer(loginUser);
+		deleted = true;
+		histories.add(new DeleteHistory(ContentType.QUESTION, getId(), loginUser));
+		return histories;
+	}
+	
+	public void checkQuestionStatus(User loginUser) throws AuthenticationException, CannotDeleteException {
 		if (!isOwner(loginUser)) {
 			throw new AuthenticationException("자신의 글만 삭제 가능");
 		}
-		if (this.deleted) {
-			throw new CannotDeleteException("이미 삭제된 댓글");
+		if (isDeleted()) {
+			throw new CannotDeleteException("이미 삭제된 글입니다.");
 		}
-		deleteAnswer(loginUser);
-		this.deleted = true;
 	}
 
 	public boolean checkAnswerStatus(User loginUser) {
@@ -122,13 +127,15 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 		return result;
 	}
 
-	public void deleteAnswer(User loginUser) throws CannotDeleteException, AuthenticationException {
+	public List<DeleteHistory> deleteAnswer(User loginUser) throws CannotDeleteException, AuthenticationException {
 		if (!checkAnswerStatus(loginUser)) {
-			throw new CannotDeleteException("답변이 존재합니다.");
+			throw new CannotDeleteException("다른 사용자의 답변이 존재합니다.");
 		}
+	    List<DeleteHistory> histories = new ArrayList<>();
 		for (int i = 0; i < answers.size(); i++) {
-			answers.get(i).delete(loginUser);
+			histories.add(answers.get(i).delete(loginUser));
 		}
+		return histories;
 	}
 
 }

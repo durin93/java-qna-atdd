@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
 import codesquad.domain.AnswerRepository;
+import codesquad.domain.ContentType;
+import codesquad.domain.DeleteHistory;
+import codesquad.domain.DeleteHistoryRepository;
 import codesquad.domain.QuestionRepository;
 import codesquad.dto.QuestionDto;
 import support.test.AcceptanceTest;
@@ -21,6 +24,9 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 	
 	@Autowired
 	private AnswerRepository answerRepository;
+
+	@Autowired
+	private DeleteHistoryRepository deleteHistoryRepository;
 
 	private static final Long EXIST_QUESTION = 1L;
 
@@ -62,6 +68,7 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 		assertThat(questionRepository.findById(2L).get().isDeleted(), is(false));
 		basicAuthTemplate(defaultAnotherUser()).delete("/api/questions/2");
 		assertThat(questionRepository.findById(2L).get().isDeleted(), is(true));
+		assertThat(deleteHistoryRepository.findById(1L).get() , is(new DeleteHistory(1L,ContentType.QUESTION, 2L, defaultAnotherUser())));
 	}
 	
 	@Test
@@ -71,6 +78,9 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 		basicAuthTemplate().delete("/api/questions/3");
 		assertThat(questionRepository.findById(3L).get().isDeleted(), is(true));
 		assertThat(answerRepository.findById(4L).get().isDeleted(), is(true));
+		
+		assertThat(deleteHistoryRepository.findById(2L).get() , is(new DeleteHistory(2L, ContentType.ANSWER, 4L, defaultUser())));
+		assertThat(deleteHistoryRepository.findById(3L).get() , is(new DeleteHistory(3L, ContentType.QUESTION, 3L, defaultUser())));
 	}
 	
 	@Test

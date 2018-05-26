@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import codesquad.CannotDeleteException;
 import codesquad.domain.Answer;
 import codesquad.domain.AnswerRepository;
-import codesquad.domain.ContentType;
-import codesquad.domain.DeleteHistory;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
@@ -55,7 +53,14 @@ public class QnaService {
 	@Transactional
 	public void deleteQuestion(User loginUser, long id) throws CannotDeleteException, AuthenticationException {
 		Question question = questionRepository.findById(id).orElseThrow(NullPointerException::new);
-		question.delete(loginUser); 
+		deleteHistoryService.saveAll(question.delete(loginUser));
+		/*
+		 * 이거들어가니까 먼가로직적오류가나긴합니다.
+		DeleteHistory deleteHistory = new DeleteHistory(ContentType.QUESTION, id, loginUser);
+		List<DeleteHistory> deleteHistories = null;
+		deleteHistoryService.saveAll(deleteHistories);
+		*/
+		
 	}
 
 	public Iterable<Question> findAll() {

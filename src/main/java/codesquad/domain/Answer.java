@@ -8,7 +8,6 @@ import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.validation.constraints.Size;
 
-import org.springframework.transaction.annotation.Transactional;
 
 import codesquad.CannotDeleteException;
 import support.domain.AbstractEntity;
@@ -77,7 +76,7 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
     }
     
     
-    public void delete(User loginUser) throws CannotDeleteException, AuthenticationException {
+    public DeleteHistory delete(User loginUser) throws CannotDeleteException, AuthenticationException {
     	if (!isOwner(loginUser)) {
 			throw new AuthenticationException("자신의 글만 삭제 가능");
 		}
@@ -85,6 +84,7 @@ public class Answer extends AbstractEntity implements UrlGeneratable {
     		throw new CannotDeleteException("이미 삭제된 댓글");
     	}
     	this.deleted = true;
+    	return new DeleteHistory(ContentType.ANSWER, getId(),loginUser);
     }
 
     @Override
