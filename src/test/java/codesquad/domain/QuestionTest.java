@@ -34,5 +34,5 @@ public class QuestionTest {
 		question.update(updatedQuestion, user);
 		assertThat(question, is(updatedQuestion));
 	}
-
+	
 }

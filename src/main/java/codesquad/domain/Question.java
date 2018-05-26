@@ -17,6 +17,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Where;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import codesquad.CannotDeleteException;
 import codesquad.dto.QuestionDto;
 import support.domain.AbstractEntity;
@@ -102,12 +103,32 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 		this.contents = updatedQuestion.contents;
 	}
 
-	  public void delete() throws CannotDeleteException {
-	    	if(this.deleted) {
-	    		throw new CannotDeleteException("이미 삭제된 댓글");
-	    	}
-	    	this.deleted = true;
-	    }
+	public void delete(User loginUser) throws CannotDeleteException, AuthenticationException {
+		if (!isOwner(loginUser)) {
+			throw new AuthenticationException("자신의 글만 삭제 가능");
+		}
+		if (this.deleted) {
+			throw new CannotDeleteException("이미 삭제된 댓글");
+		}
+		deleteAnswer(loginUser);
+		this.deleted = true;
+	}
 
+	public boolean checkAnswerStatus(User loginUser) {
+		boolean result = true;
+		for (int i = 0; i < answers.size(); i++) {
+			result &= answers.get(i).isOwner(loginUser);
+		}
+		return result;
+	}
+
+	public void deleteAnswer(User loginUser) throws CannotDeleteException, AuthenticationException {
+		if (!checkAnswerStatus(loginUser)) {
+			throw new CannotDeleteException("답변이 존재합니다.");
+		}
+		for (int i = 0; i < answers.size(); i++) {
+			answers.get(i).delete(loginUser);
+		}
+	}
 
 }

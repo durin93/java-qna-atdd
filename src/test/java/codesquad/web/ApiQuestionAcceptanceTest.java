@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 
+import codesquad.domain.AnswerRepository;
 import codesquad.domain.QuestionRepository;
 import codesquad.dto.QuestionDto;
 import support.test.AcceptanceTest;
@@ -17,6 +18,9 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 
 	@Autowired
 	private QuestionRepository questionRepository;
+	
+	@Autowired
+	private AnswerRepository answerRepository;
 
 	private static final Long EXIST_QUESTION = 1L;
 
@@ -54,11 +58,29 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 	}
 
 	@Test
-	public void delete() {
-		createResource(basicAuthTemplate(), "/api/questions",  createQuestionDto(4L));
-		assertThat(questionRepository.findById(4L).get().isDeleted(), is(false));
-		basicAuthTemplate().delete("/api/questions/4");
-		assertThat(questionRepository.findById(4L).get().isDeleted(), is(true));
+	public void delete_댓글없음() {
+		assertThat(questionRepository.findById(2L).get().isDeleted(), is(false));
+		basicAuthTemplate(defaultAnotherUser()).delete("/api/questions/2");
+		assertThat(questionRepository.findById(2L).get().isDeleted(), is(true));
+	}
+	
+	@Test
+	public void delete_댓글존재_모든댓글로그인유저꺼() {
+		createResource(basicAuthTemplate(), String.format("/api/answers/%d", 3L), "내용은5자이상");
+		assertThat(questionRepository.findById(3L).get().isDeleted(), is(false));
+		basicAuthTemplate().delete("/api/questions/3");
+		assertThat(questionRepository.findById(3L).get().isDeleted(), is(true));
+		assertThat(answerRepository.findById(4L).get().isDeleted(), is(true));
+	}
+	
+	@Test
+	public void delete_댓글존재_다른유저의댓글있음() {
+		assertThat(questionRepository.findById(1L).get().isDeleted(), is(false));
+		basicAuthTemplate().delete("/api/questions/1");
+		assertThat(questionRepository.findById(1L).get().isDeleted(), is(false));
+		assertThat(answerRepository.findById(1L).get().isDeleted(), is(false));
+		assertThat(answerRepository.findById(2L).get().isDeleted(), is(false));
+		assertThat(answerRepository.findById(3L).get().isDeleted(), is(false));
 	}
 	
 	public QuestionDto createQuestionDto(Long id) {
